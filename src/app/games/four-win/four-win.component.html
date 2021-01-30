@@ -1,0 +1,20 @@
+<div class="container w-auto ">
+  <div class="four-win-grid">
+    <div class="circle-container" *ngFor="let gridTopItemColumn of gridTopItems, let column = index">
+      <div *ngIf="column === 3">
+        <div class="showCircle" [style.background-color]="nextColor"></div>
+      </div>
+      <div *ngFor="let gridTopItemRow of gridTopItemColumn">
+        <div class="circle"
+             [@moveCircle]="{value: points[gridTopItemRow][column].state, params: {yPosition: points[gridTopItemRow][column].y, yHop1: yHop1, yHop2: yHop2, 'bg-color': points[gridTopItemRow][column].color }}">
+        </div>
+        <div class="column-container" [style]="{'z-index': gridTopItemRow}"
+             (click)="setCircle(gridTopItemRow, column, true)"
+             [@hideContainer]="{value: points[gridTopItemRow][column].containerState}">
+        </div>
+      </div>
+    </div>
+    <div class="center grid-design" *ngFor="let gridItem of gridItems">
+    </div>
+  </div>
+</div>
