@@ -1,10 +1,8 @@
-import { AfterViewInit, Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { Point } from './model/point.model';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WinnerDialogComponent } from './winner-dialog/winner-dialog.component';
-import { io } from 'socket.io-client';
-import { GlobalService } from '../../global.service';
 
 @Component({
   selector: 'app-four-win',
@@ -40,7 +38,7 @@ import { GlobalService } from '../../global.service';
       transition('open => remove', [animate('0.5s')])
     ])]
 })
-export class FourWinComponent implements OnInit, AfterViewInit, OnDestroy {
+export class FourWinComponent implements OnInit {
 
   gridItems: string[];
   gridTopItems: number[][];
@@ -52,33 +50,20 @@ export class FourWinComponent implements OnInit, AfterViewInit, OnDestroy {
   nextColor: string;
   currentColor: string;
 
-  constructor(private dialog: MatDialog, private globalService: GlobalService) {
+  constructor(private dialog: MatDialog) {
     this.gridItems = [];
     this.gridTopItems = [];
     this.points = [];
+    this.yHop1 = 0;
+    this.yHop2 = 0;
+    this.clickable = true;
+    this.count = 0;
+    this.nextColor = '';
+    this.currentColor = '';
   }
 
   ngOnInit(): void {
-    this.globalService.socket.on('connected', (data: any) => {
-      this.globalService.id = data.id;
-      this.globalService.myTurn = true;
-    });
-
     this.createGrid();
-
-    window.onbeforeunload = () => this.ngOnDestroy();
-  }
-
-  ngAfterViewInit(): void {
-    this.globalService.socket.on('newCircle', (data: any) => {
-      this.globalService.myTurn = true;
-      this.setCircle(data.row, data.column);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.globalService.socket.emit('logout', { id: this.globalService.id });
-    window.localStorage.clear();
   }
 
   openDialog(): void {
@@ -94,37 +79,31 @@ export class FourWinComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  setCircle(row: number, column: number, synchronize = false): void {
+  setCircle(row: number, column: number): void {
 
-    if (this.globalService.myTurn) {
-      if (synchronize) {
-        this.globalService.myTurn = false;
-        this.globalService.socket.emit('setCircle', { row: row, column: column });
-      }
-      const point = this.points[row][column];
-      if (this.clickable) {
-        this.clickable = false;
-        if (point.state !== 'end') {
-          point.containerState = 'hide';
+    const point = this.points[row][column];
+    if (this.clickable) {
+      this.clickable = false;
+      if (point.state !== 'end') {
+        point.containerState = 'hide';
 
-          if (this.count % 2 === 0) {
-            this.currentColor = point.color = 'yellow';
-            this.nextColor = 'red';
-          } else {
-            this.currentColor = point.color = 'red';
-            this.nextColor = 'yellow';
-          }
-          point.y = (89 * (row + 1));
-          this.yHop1 = point.y - 70;
-          this.yHop2 = point.y - 40;
-          point.state = 'end';
-          this.count++;
+        if (this.count % 2 === 0) {
+          this.currentColor = point.color = 'yellow';
+          this.nextColor = 'red';
+        } else {
+          this.currentColor = point.color = 'red';
+          this.nextColor = 'yellow';
         }
-        if (this.checkFourConnect(row, column, 0, point.color)) {
-          this.openDialog();
-        }
-        this.delay(1000);
+        point.y = (89 * (row + 1));
+        this.yHop1 = point.y - 70;
+        this.yHop2 = point.y - 40;
+        point.state = 'end';
+        this.count++;
       }
+      if (this.checkFourConnect(row, column, 0, point.color)) {
+        this.openDialog();
+      }
+      this.delay(1000);
     }
   }
 

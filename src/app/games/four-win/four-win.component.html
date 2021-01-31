@@ -9,7 +9,7 @@
              [@moveCircle]="{value: points[gridTopItemRow][column].state, params: {yPosition: points[gridTopItemRow][column].y, yHop1: yHop1, yHop2: yHop2, 'bg-color': points[gridTopItemRow][column].color }}">
         </div>
         <div class="column-container" [style]="{'z-index': gridTopItemRow}"
-             (click)="setCircle(gridTopItemRow, column, true)"
+             (click)="setCircle(gridTopItemRow, column)"
              [@hideContainer]="{value: points[gridTopItemRow][column].containerState}">
         </div>
       </div>
